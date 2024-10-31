@@ -1,0 +1,74 @@
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    color: #007bff;
+}
+
+#mapa {
+    border: 2px solid #007bff;
+    border-radius: 8px;
+}
+
+footer {
+    background-color: #f2f2f2;
+    padding: 1px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+footer p {
+    margin: 0;
+}
+.social-icons {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.social-icons li {
+    margin: 0 10px;
+}
+
+.social-icons li a {
+    display: block;
+}
+
+.logo_esquina{
+    width: 50px;
+    height: auto;
+    margin-bottom: 10px;
+}
+/*Estilo de barra historial
+
+/* Estilo para el historial de búsqueda */
+.sidebar {
+    width: 250px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    float: left;
+}
+
+.historial-lista {
+    list-style-type: none;
+    padding: 0;
+}
+
+.historial-lista li {
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: #e6e6e6;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.historial-lista li:hover {
+    background-color: #d4d4d4;
+}

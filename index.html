@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado Eficiente</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!--Iconos desde Font Awesome-->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1842499606253396" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Modal de Bienvenida -->
+    <div id="modalBienvenida" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bienvenid@ usuario</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Mercadoeficiente.cl pretende ser una ayuda simple a la búsqueda de licitaciones públicas por código.</p>
+                    <p>Los precios que son posibles de ver son aquellos licitaciones que están en pesos chilenos.</p>
+                    <p>No pretende ser un reemplazo de mercadopublico.cl, sino una plataforma complementaria y eficaz.</p>
+                    <p>Cualquier duda y sugerencia al correo contacto@mercadoeficiente.cl</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnAceptar" type="button" class="btn btn-primary">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container mt-5">
+        <h1 class="text-center">Ofertas de Mercado Público</h1>
+
+        <!-- Selección de Temática -->
+        <div class="form-group">
+            <label for="temaInput">Código de temática:</label>
+            <input type="text" id="temaInput" class="form-control" placeholder="Ejemplo: 4547-54-LR24">
+            <button class="btn btn-primary mt-3" onclick="obtenerOfertas()">Buscar Ofertas</button>
+        </div>
+
+        <!-- Desglose de Ofertas -->
+        <div class="mt-5">
+            <h2>Desglose por Monto y Ubicación</h2>
+            <div id="resultados" class="row">
+                <div class="col-md-10">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Oferta</th>
+                                <th>Monto Total</th>
+                                <th>IVA</th>
+                                <th>Monto Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaOfertas">
+                            <!-- Datos de la API serán insertados aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de la Oferta -->
+        <div class="mt-4">
+            <h2>Detalles de la Oferta</h2>
+            <div class="row">
+                <!-- Columna de Detalles de la Oferta -->
+                <div class="col-md-6 border-right">
+                    <div class="p-3 bg-light">
+                        <p><strong>Descripción:</strong> <span id="descripcionOferta">N/A</span></p>
+                        <p><strong>Fuente Financiamiento:</strong> <span id="fuenteFinanciamiento">N/A</span></p>
+                        <p><strong>Moneda:</strong> <span id="Currency">N/A</span></p>
+                        <p><strong>Nombre del Organismo:</strong> <span id="nombreOrganismo">N/A</span></p>
+                        <p><strong>RUT del Organismo:</strong> <span id="Rut">N/A</span></p>
+                        <p><strong>Dirección del Organismo:</strong> <span id="direccionOrganismo">N/A</span></p>
+                        <p><strong>Comuna del Organismo:</strong> <span id="comunaOrganismo">N/A</span></p>
+                        <p><strong>Región del Organismo:</strong> <span id="regionOrganismo">N/A</span></p>
+                        <p><strong>Tiempo del contrato:</strong> <span id="tiempoContrato">N/A</span> <span id="unidadTiempo">N/A</span></p>
+                        <p><strong>Fechas:</strong></p>
+                        <ul id="fechasOferta">
+                            <li>Fecha de Publicación: <span id="fechaCreacion">N/A</span></li>
+                            <li>Fecha de Cierre de oferta: <span id="fechaCierre">N/A</span></li>
+                            <li>Fecha de Adjudicación: <span id="fechaAdjudicacion">N/A</span></li>
+                            <li>Fecha Inicial de preguntas: <span id="fechainiciopreguntas">N/A</span></li>
+                            <li>Fecha Final de preguntas: <span id="fechafinalpreguntas">N/A</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Columna de Opciones Adicionales -->
+                <div class="col-md-6">
+                    <!-- Fecha de Cierre y Cronómetro -->
+                    <div class="p-3 mb-4 bg-light">
+                        <h5><strong>Fecha para Cierre</strong></h5>
+                        <p id="fechaCierreOferta">Fecha: <span id="fechaCierre_1">N/A</span></p>
+                        <p><strong>Tiempo restante:</strong> <span id="cronometro">N/A</span></p>
+                    </div>
+
+                    <!-- Aviso a correo con alertas -->
+                    <div class="p-3 mb-4 bg-light">
+                        <h5>Avisar a correo</h5>
+                        <input type="email" id="correoAlerta" class="form-control" placeholder="Ingresa tu correo">
+                        <p>Recibir recordatorio:</p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alerta1h">
+                            <label class="form-check-label" for="alerta1h">1 hora antes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alerta24h">
+                            <label class="form-check-label" for="alerta24h">24 horas antes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alerta48h">
+                            <label class="form-check-label" for="alerta48h">48 horas antes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alerta72h">
+                            <label class="form-check-label" for="alerta72h">72 horas antes</label>
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="activarAlertas(oferta)">Activar Alertas</button>
+                    </div>
+
+                    <div class="p-3 mt-4 bg-light">
+                        <h5> Avisar Resultado </h5>
+                        <div>
+                            <label for="correoAviso">Correo de Aviso:</label>
+                            <input type="email" id="correoAviso" required>
+                            <button class="btn btn-primary mt-3" id="btnAvisarResultado" type="button">Enviar Aviso</button>
+                            <p id="mensajeSuscripcion" style="display: none;"></p> <!-- Aquí se mostrará el mensaje -->
+                        </div>                        
+                    </div>
+                    
+
+
+                    <!-- Exportar en CSV -->
+                    <div class="p-3 bg-light">
+                        <button class="btn btn-success" onclick="exportarCSV()">Exportar en CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><br>
+
+    <!-- Footer -->
+    <section>
+        <div class="container">
+            <footer>
+                <a class="" href="#">
+                    <img src="./assets/img/Dann LeBeau-logos_black.png" alt="Logo" class="logo_esquina">
+                </a>
+                <p>Elaborado por Dann LeBeau</p>
+                <p>Todos los derechos reservados &copy; 2024</p>
+                <ul class="social-icons">
+                    <li><a href="#"><i class="fab fa-facebook icon"></i></a></li>
+                    <li><a href="#"><i class="fab fa-linkedin icon"></i></a></li>
+                    <li><a href="#"><i class="fab fa-instagram icon"></i></a></li>
+                    <li><a href="https://github.com/dannlebeau"><i class="fab fa-github icon"></i></a></li>
+                </ul>
+            </footer>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
+
