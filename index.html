@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--Metadatos-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Dann LeBeau">
+    <meta name="description" content="Mercado Eficiente: la manera más simple de ver las oportunidades">
+    <meta name="keywords" content="Mercado Público, Mercado, Licitaciones, ChileCompra, Oportunidades">
+    <meta name="robots" content="index, follow"/>
     <title>Mercado Eficiente</title>
+    <!--The own the this page web is Dann LaBeau-->
+    <link rel="icon" href="./assets/img/Mercado_eficiente_logo.png"> <!--Icono en la pestaña Favicon-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <!--Iconos desde Font Awesome-->
@@ -85,12 +93,17 @@
                         <ul id="fechasOferta">
                             <li>Fecha de Publicación: <span id="fechaCreacion">N/A</span></li>
                             <li>Fecha de Cierre de oferta: <span id="fechaCierre">N/A</span></li>
-                            <li>Fecha de Adjudicación: <span id="fechaAdjudicacion">N/A</span></li>
                             <li>Fecha Inicial de preguntas: <span id="fechainiciopreguntas">N/A</span></li>
                             <li>Fecha Final de preguntas: <span id="fechafinalpreguntas">N/A</span></li>
+                            <li>Fecha de Adjudicación: <span id="fechaAdjudicacion">N/A</span></li>
                         </ul>
+                    <!-- Exportar en XLSX -->
+                        <div class="p-3 bg-light">
+                            <button class="btn btn-success" onclick="exportarXLSX()">Exportar en XLSX</button>
+                        </div>
                     </div>
                 </div>
+                
 
                 <!-- Columna de Opciones Adicionales -->
                 <div class="col-md-6">
@@ -130,17 +143,11 @@
                         <div>
                             <label for="correoAviso">Correo de Aviso:</label>
                             <input type="email" id="correoAviso" required>
-                            <button class="btn btn-primary mt-3" id="btnAvisarResultado" type="button">Enviar Aviso</button>
+                            <button class="btn btn-primary " id="btnAvisarResultado" type="button">Enviar Aviso</button>
                             <p id="mensajeSuscripcion" style="display: none;"></p> <!-- Aquí se mostrará el mensaje -->
                         </div>                        
                     </div>
                     
-
-
-                    <!-- Exportar en CSV -->
-                    <div class="p-3 bg-light">
-                        <button class="btn btn-success" onclick="exportarCSV()">Exportar en CSV</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -167,6 +174,11 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        emailjs.init("e8UTu4GeibxTJ2A_r"); // Inicializa EmailJS
+    </script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>

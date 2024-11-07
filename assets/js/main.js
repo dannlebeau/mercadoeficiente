@@ -207,23 +207,42 @@ function actualizarCronometro(tiempoRestante) {
     document.getElementById("cronometro").textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
 }
 
+//Exportar EXCEL
 
-// Exportar datos a CSV
-function exportarCSV() {
-    const oferta = document.getElementById("descripcionOferta").textContent;
-    const montoTotal = document.querySelector("#tablaOfertas tr td:nth-child(2)")?.textContent || 'N/A';
-    const iva = document.querySelector("#tablaOfertas tr td:nth-child(3)")?.textContent || 'N/A';
-    const montoNeto = document.querySelector("#tablaOfertas tr td:nth-child(4)")?.textContent || 'N/A';
+function exportarXLSX() {
+    // Recolectar los datos que quieres exportar
+    const descripcion = document.getElementById("descripcionOferta").textContent;
+    const fuenteFinanciamiento = document.getElementById("fuenteFinanciamiento").textContent;
+    const moneda = document.getElementById("Currency").textContent;
+    const nombreOrganismo = document.getElementById("nombreOrganismo").textContent;
+    const rutOrganismo = document.getElementById("Rut").textContent;
+    const direccionOrganismo = document.getElementById("direccionOrganismo").textContent;
+    const comunaOrganismo = document.getElementById("comunaOrganismo").textContent;
+    const regionOrganismo = document.getElementById("regionOrganismo").textContent;
+    const tiempoContrato = document.getElementById("tiempoContrato").textContent;
+    const unidadTiempo = document.getElementById("unidadTiempo").textContent;
+    
+    const fechaCreacion = document.getElementById("fechaCreacion").textContent;
+    const fechaCierre = document.getElementById("fechaCierre").textContent;
+    const fechaInicioPreguntas = document.getElementById("fechainiciopreguntas").textContent;
+    const fechaFinalPreguntas = document.getElementById("fechafinalpreguntas").textContent;
+    const fechaAdjudicacion = document.getElementById("fechaAdjudicacion").textContent;
 
-    const csvContent = `data:text/csv;charset=utf-8,Oferta, Monto Total, IVA, Monto Neto\n${oferta},${montoTotal},${iva},${montoNeto}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "oferta.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Crear los datos en un formato que SheetJS pueda manejar
+    const data = [
+        ["Descripción", "Fuente Financiamiento", "Moneda", "Nombre Organismo", "RUT Organismo", "Dirección Organismo", "Comuna Organismo", "Región Organismo", "Tiempo Contrato", "Unidad Tiempo", "Fecha Creación", "Fecha Cierre", "Fecha Inicio Preguntas", "Fecha Final Preguntas", "Fecha Adjudicación"],
+        [descripcion, fuenteFinanciamiento, moneda, nombreOrganismo, rutOrganismo, direccionOrganismo, comunaOrganismo, regionOrganismo, tiempoContrato, unidadTiempo, fechaCreacion, fechaCierre, fechaInicioPreguntas, fechaFinalPreguntas, fechaAdjudicacion]
+    ];
+
+    // Crea una hoja de cálculo
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Oferta");
+
+    // Genera un archivo XLSX y permite su descarga
+    XLSX.writeFile(wb, "oferta.xlsx");
 }
+
 
 //Boton de enviar Alerta
 
@@ -277,7 +296,10 @@ function enviarAlerta(email, mensaje) {
 //Historial de busqueda
 
 
-//Correo de Aviso
+
+// Correo de Aviso
+emailjs.init("e8UTu4GeibxTJ2A_r"); // Tu Public Key
+
 $(document).ready(function () {
     // Cuando se presiona el botón "Enviar Aviso"
     $("#btnAvisarResultado").click(function () {
@@ -285,35 +307,45 @@ $(document).ready(function () {
     });
 });
 
-const apiKey = "B23CB497-A854-4680-B86F-AE4E69F019E2"; // Tu clave de API
-
 function verificarResultados() {
-    const tema = document.getElementById("temaInput").value; // Asegúrate de que este elemento exista
-    const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${tema}&ticket=${apiKey}`;
+    const tema = document.getElementById("temaInput").value; // Código del tema
+    console.log("Código del tema ingresado:", tema); // Debug: Verifica el valor del tema ingresado
     
-    console.log("Tema ingresado:", tema); // Verifica el valor de tema
-
+    const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${tema}&ticket=B23CB497-A854-4680-B86F-AE4E69F019E2`; // URL de la API
+    console.log("URL de la API:", url); // Debug: Verifica la URL que estamos usando para la consulta
+    
     fetch(url)
         .then(response => {
+            console.log("Respuesta de la API:", response); // Debug: Verifica la respuesta de la API
             if (!response.ok) {
                 throw new Error("Network response was not ok: " + response.statusText);
             }
             return response.json();
         })
         .then(data => {
-            console.log("Datos de la API:", data); // Muestra la respuesta de la API
-
+            console.log("Datos de la API:", data); // Debug: Verifica los datos recibidos de la API
+            
             if (data && data.Listado && data.Listado.length > 0) {
                 const proyecto = data.Listado[0]; // Obtener el primer proyecto
                 const item = proyecto.Items.Listado[0]; // Obtener el primer item
 
-                if (item.Adjudicacion && item.Adjudicacion.NombreProveedor) {
-                    const mensaje = `Se ha adjudicado el Proyecto "${proyecto.Nombre}" al Proveedor "${item.Adjudicacion.NombreProveedor}", Rut "${item.Adjudicacion.RutProveedor}" por un monto de "${item.Adjudicacion.MontoUnitario}". Para más detalle ver "${proyecto.Adjudicacion.UrlActa}"`;
+                console.log("Proyecto:", proyecto); // Debug: Verifica el primer proyecto
+                console.log("Item del proyecto:", item); // Debug: Verifica el primer item
 
-                    console.log(mensaje); // Muestra el mensaje en la consola
+                if (item.Adjudicacion && item.Adjudicacion.NombreProveedor) {
+                    // Calcular el total solo si existe la adjudicación
+                    const cantidad = item.Adjudicacion.Cantidad;
+                    const montoUnitario = item.Adjudicacion.MontoUnitario;
+                    const total = cantidad * montoUnitario; // Calcular el total
+                    
+                    // Construir el mensaje con la URL como hipervínculo
+                    const mensaje = `Se ha adjudicado el Proyecto "${proyecto.Nombre}" al Proveedor "${item.Adjudicacion.NombreProveedor}", Rut "${item.Adjudicacion.RutProveedor}" con una cantidad de "${cantidad}" por un monto unitario de $"${montoUnitario}", siendo el total el resultado de esto: ${cantidad} * ${montoUnitario} = $${total}. Para más detalles, ver "${proyecto.Adjudicacion.UrlActa}"`;
+
+                    console.log("Mensaje preparado:", mensaje); // Debug: Verifica el mensaje preparado
+
                     const email = document.getElementById("correoAviso").value; // Obtener el correo
-                    enviarCorreo(email, mensaje);
-                    mostrarMensajeSuscripcion();
+                    console.log("Correo al que se enviará el mensaje:", email); // Debug: Verifica el correo ingresado
+                    enviarCorreo(email, mensaje); // Enviar correo
                 } else {
                     alert("No se encontró información de adjudicación.");
                 }
@@ -323,15 +355,30 @@ function verificarResultados() {
         })
         .catch(error => {
             console.error("Error al verificar los resultados:", error);
+            alert("Hubo un problema al verificar los resultados. Verifica la consola.");
         });
 }
 
-// Función para enviar el correo (simulación)
 function enviarCorreo(email, mensaje) {
-    console.log(`Enviando correo a ${email}: ${mensaje}`); // Simulación de envío
+    const templateParams = {
+        to_email: email, // Correo del destinatario
+        subject: "Notificación de Adjudicación de Proyecto", // Asunto
+        message: mensaje, // El mensaje que hemos preparado
+        reply_to: email
+    };
+
+    console.log("Enviando correo con estos parámetros:", templateParams); // Debug: Verifica los parámetros antes de enviar el correo
+
+    emailjs.send("service_5gyggkr", "template_i2hcmdj", templateParams) // Asegúrate de usar el Template ID correcto
+        .then(function(response) {
+            console.log('Correo enviado exitosamente', response);
+            alert("Correo enviado exitosamente.");
+        }, function(error) {
+            console.error('Error al enviar correo', error); // Línea comentada
+            alert("Error al enviar el correo.");
+        });
 }
 
-// Función para mostrar el mensaje de suscripción
 function mostrarMensajeSuscripcion() {
     $("#mensajeSuscripcion").text("Suscrito al aviso").fadeIn().delay(3000).fadeOut(); // Muestra el mensaje por 3 segundos
 }
