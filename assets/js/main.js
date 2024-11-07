@@ -382,3 +382,13 @@ function enviarCorreo(email, mensaje) {
 function mostrarMensajeSuscripcion() {
     $("#mensajeSuscripcion").text("Suscrito al aviso").fadeIn().delay(3000).fadeOut(); // Muestra el mensaje por 3 segundos
 }
+
+
+//Hora y fecha al lado derecho
+function actualizarFechaHora() {
+    const fechaHoraElemento = document.getElementById("fechaHora");
+    const ahora = new Date();
+    const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    fechaHoraElemento.textContent = ahora.toLocaleDateString('es-ES', opciones);
+}
+setInterval(actualizarFechaHora, 1000); // Actualiza cada segundo

@@ -3,6 +3,22 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.navbar-brand img {
+    max-width: 40px;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .navbar .col-6 {
+        text-align: center;
+    }
+    .navbar .col-6:first-child {
+        text-align: left;
+    }
+}
+
+
+
 h1, h2 {
     color: #007bff;
 }
