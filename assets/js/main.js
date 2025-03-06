@@ -392,3 +392,19 @@ function actualizarFechaHora() {
     fechaHoraElemento.textContent = ahora.toLocaleDateString('es-ES', opciones);
 }
 setInterval(actualizarFechaHora, 1000); // Actualiza cada segundo
+
+
+//MERCADO PUBLICO --> ver proyectos
+document.getElementById('temaInput').addEventListener('input', function () {
+    const inputValor = this.value.trim();
+    const botonVer = document.getElementById('verMercadoPublico');
+
+    if (inputValor) {
+        botonVer.disabled = false;
+        botonVer.onclick = function () {
+            window.open(`http://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=${inputValor}`, '_blank');
+        };
+    } else {
+        botonVer.disabled = true;
+    }
+});
