@@ -69,153 +69,239 @@
         </div>
     </div>
 
-    <div class="container mt-5 mb-5">
-        <h1 class="text-center mb-4">Ofertas de Mercado Público</h1>
+    <div class="container mt-4 mb-5">
+        <h1 class="text-center mb-3">Mercado Público</h1>
 
-        <!-- Búsqueda -->
-        <div class="section-card mb-4">
-            <div class="section-card-body">
-                <div class="form-group mb-0">
-                    <label for="temaInput" style="font-size:0.8rem; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:0.5px;">Código de temática</label>
-                    <div class="input-group">
-                        <input type="text" id="temaInput" class="form-control" placeholder="Ejemplo: 4547-54-LR24">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" onclick="obtenerOfertas()">
-                                <i class="fas fa-search mr-1"></i> Buscar Ofertas
-                            </button>
+        <!-- Pestañas principales -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="licitaciones-tab" data-toggle="tab" href="#licitaciones" role="tab" aria-controls="licitaciones" aria-selected="true">
+                    <i class="fas fa-file-contract"></i> Licitaciones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="compra-agil-tab" data-toggle="tab" href="#compra-agil" role="tab" aria-controls="compra-agil" aria-selected="false">
+                    <i class="fas fa-bolt"></i> Compra Ágil
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="mainTabContent">
+
+            <!-- ══ TAB 1: LICITACIONES ══════════════════════ -->
+            <div class="tab-pane fade show active" id="licitaciones" role="tabpanel" aria-labelledby="licitaciones-tab">
+
+                <!-- Búsqueda -->
+                <div class="section-card mb-4">
+                    <div class="section-card-body">
+                        <div class="form-group mb-0">
+                            <label for="temaInput" style="font-size:0.8rem; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:0.5px;">Código de temática</label>
+                            <div class="input-group">
+                                <input type="text" id="temaInput" class="form-control" placeholder="Ejemplo: 4547-54-LR24">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" onclick="obtenerOfertas()">
+                                        <i class="fas fa-search mr-1"></i> Buscar Ofertas
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Desglose de Ofertas -->
-        <div class="section-card">
-            <div class="section-card-header">
-                <h2><i class="fas fa-table mr-2"></i>Desglose por Monto y Ubicación</h2>
-            </div>
-            <div class="section-card-body">
-                <div id="resultados" class="row">
-                    <div class="col-md-10">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Oferta</th>
-                                    <th>Monto Total</th>
-                                    <th>IVA</th>
-                                    <th>Monto Neto</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaOfertas">
-                                <!-- Datos de la API serán insertados aquí -->
-                            </tbody>
-                        </table>
+                <!-- Desglose de Ofertas -->
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <h2><i class="fas fa-table mr-2"></i>Desglose por Monto y Ubicación</h2>
+                    </div>
+                    <div class="section-card-body">
+                        <div id="resultados" class="row">
+                            <div class="col-md-10">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Oferta</th>
+                                            <th>Monto Total</th>
+                                            <th>IVA</th>
+                                            <th>Monto Neto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaOfertas">
+                                        <!-- Datos de la API serán insertados aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Detalles de la Oferta -->
-        <div class="section-card mt-4">
-            <div class="section-card-header">
-                <h2><i class="fas fa-file-alt mr-2"></i>Detalles de la Oferta</h2>
-            </div>
-            <div class="section-card-body">
-                <div class="row">
+                <!-- Detalles de la Oferta -->
+                <div class="section-card mt-4">
+                    <div class="section-card-header">
+                        <h2><i class="fas fa-file-alt mr-2"></i>Detalles de la Oferta</h2>
+                    </div>
+                    <div class="section-card-body">
+                        <div class="row">
 
-                    <!-- Columna izquierda: información -->
-                    <div class="col-md-6">
-                        <div class="panel-card">
-                            <h5><i class="fas fa-info-circle mr-1"></i> Información General</h5>
-                            <p><strong>Descripción:</strong> <span id="descripcionOferta">N/A</span></p>
-                            <p><strong>Fuente Financiamiento:</strong> <span id="fuenteFinanciamiento">N/A</span></p>
-                            <p><strong>Moneda:</strong> <span id="Currency">N/A</span></p>
-                            <p><strong>Organismo:</strong> <span id="nombreOrganismo">N/A</span></p>
-                            <p><strong>RUT:</strong> <span id="Rut">N/A</span></p>
-                            <p><strong>Dirección:</strong> <span id="direccionOrganismo">N/A</span></p>
-                            <p><strong>Comuna:</strong> <span id="comunaOrganismo">N/A</span></p>
-                            <p><strong>Región:</strong> <span id="regionOrganismo">N/A</span></p>
-                            <p><strong>Tiempo contrato:</strong> <span id="tiempoContrato">N/A</span> <span id="unidadTiempo"></span></p>
-                            <p class="mb-1"><strong>Fechas clave:</strong></p>
-                            <ul id="fechasOferta" style="font-size:0.9rem; padding-left:1.2rem;">
-                                <li>Publicación: <span id="fechaCreacion">N/A</span></li>
-                                <li>Cierre oferta: <span id="fechaCierre">N/A</span></li>
-                                <li>Inicio preguntas: <span id="fechainiciopreguntas">N/A</span></li>
-                                <li>Fin preguntas: <span id="fechafinalpreguntas">N/A</span></li>
-                                <li>Adjudicación: <span id="fechaAdjudicacion">N/A</span></li>
-                            </ul>
-                            <button class="btn btn-success btn-sm mt-2" onclick="exportarXLSX()">
-                                <i class="fas fa-file-excel mr-1"></i> Exportar XLSX
-                            </button>
+                            <!-- Columna izquierda: información -->
+                            <div class="col-md-6">
+                                <div class="panel-card">
+                                    <h5><i class="fas fa-info-circle mr-1"></i> Información General</h5>
+                                    <p><strong>Descripción:</strong> <span id="descripcionOferta">N/A</span></p>
+                                    <p><strong>Fuente Financiamiento:</strong> <span id="fuenteFinanciamiento">N/A</span></p>
+                                    <p><strong>Moneda:</strong> <span id="Currency">N/A</span></p>
+                                    <p><strong>Organismo:</strong> <span id="nombreOrganismo">N/A</span></p>
+                                    <p><strong>RUT:</strong> <span id="Rut">N/A</span></p>
+                                    <p><strong>Dirección:</strong> <span id="direccionOrganismo">N/A</span></p>
+                                    <p><strong>Comuna:</strong> <span id="comunaOrganismo">N/A</span></p>
+                                    <p><strong>Región:</strong> <span id="regionOrganismo">N/A</span></p>
+                                    <p><strong>Tiempo contrato:</strong> <span id="tiempoContrato">N/A</span> <span id="unidadTiempo"></span></p>
+                                    <p class="mb-1"><strong>Fechas clave:</strong></p>
+                                    <ul id="fechasOferta" style="font-size:0.9rem; padding-left:1.2rem;">
+                                        <li>Publicación: <span id="fechaCreacion">N/A</span></li>
+                                        <li>Cierre oferta: <span id="fechaCierre">N/A</span></li>
+                                        <li>Inicio preguntas: <span id="fechainiciopreguntas">N/A</span></li>
+                                        <li>Fin preguntas: <span id="fechafinalpreguntas">N/A</span></li>
+                                        <li>Adjudicación: <span id="fechaAdjudicacion">N/A</span></li>
+                                    </ul>
+                                    <button class="btn btn-success btn-sm mt-2" onclick="exportarXLSX()">
+                                        <i class="fas fa-file-excel mr-1"></i> Exportar XLSX
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Columna derecha: acciones -->
+                            <div class="col-md-6">
+
+                                <!-- Cronómetro -->
+                                <div class="panel-card">
+                                    <h5><i class="fas fa-clock mr-1"></i> Cierre de la Licitación</h5>
+                                    <p id="fechaCierreOferta" class="mb-1">Fecha: <span id="fechaCierre_1">N/A</span></p>
+                                    <p class="mb-0"><strong>Tiempo restante:</strong> <span id="cronometro">N/A</span></p>
+                                </div>
+
+                                <!-- Alertas de cierre -->
+                                <div class="panel-card">
+                                    <h5><i class="fas fa-bell mr-1"></i> Alertas de Cierre</h5>
+
+                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">
+                                        <i class="fas fa-envelope mr-1"></i> Correo electrónico
+                                    </label>
+                                    <input type="email" id="correoAlerta" class="form-control mb-3" placeholder="tu@correo.cl">
+
+                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">
+                                        <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp
+                                        <span class="badge-proximamente ml-1">Próximamente</span>
+                                    </label>
+                                    <input type="tel" id="wspAlerta" class="form-control mb-3" placeholder="+56 9 XXXX XXXX" disabled>
+
+                                    <p style="font-size:0.8rem; font-weight:600; color:#555; margin-bottom:0.4rem;">Recordar con:</p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="alerta1h">
+                                        <label class="form-check-label" for="alerta1h">1 hora antes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="alerta24h">
+                                        <label class="form-check-label" for="alerta24h">24 horas antes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="alerta48h">
+                                        <label class="form-check-label" for="alerta48h">48 horas antes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="alerta72h">
+                                        <label class="form-check-label" for="alerta72h">72 horas antes</label>
+                                    </div>
+                                    <button class="btn btn-primary btn-block mt-3" onclick="activarAlertas(oferta)">
+                                        <i class="fas fa-bell mr-1"></i> Activar Alertas
+                                    </button>
+                                </div>
+
+                                <!-- Avisar resultado -->
+                                <div class="panel-card">
+                                    <h5><i class="fas fa-paper-plane mr-1"></i> Avisar Resultado</h5>
+                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">Correo de aviso</label>
+                                    <input type="email" id="correoAviso" class="form-control mb-2" required placeholder="tu@correo.cl">
+                                    <button class="btn btn-primary btn-block" id="btnAvisarResultado" type="button">
+                                        Enviar Aviso
+                                    </button>
+                                    <p id="mensajeSuscripcion" style="display: none;" class="mt-2"></p>
+                                </div>
+
+                                <button id="verMercadoPublico" class="btn btn-outline-success btn-block">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Ver en Mercado Público
+                                </button>
+                            </div>
+
                         </div>
                     </div>
-
-                    <!-- Columna derecha: acciones -->
-                    <div class="col-md-6">
-
-                        <!-- Cronómetro -->
-                        <div class="panel-card">
-                            <h5><i class="fas fa-clock mr-1"></i> Cierre de la Licitación</h5>
-                            <p id="fechaCierreOferta" class="mb-1">Fecha: <span id="fechaCierre_1">N/A</span></p>
-                            <p class="mb-0"><strong>Tiempo restante:</strong> <span id="cronometro">N/A</span></p>
-                        </div>
-
-                        <!-- Alertas de cierre -->
-                        <div class="panel-card">
-                            <h5><i class="fas fa-bell mr-1"></i> Alertas de Cierre</h5>
-
-                            <label style="font-size:0.8rem; font-weight:600; color:#555;">
-                                <i class="fas fa-envelope mr-1"></i> Correo electrónico
-                            </label>
-                            <input type="email" id="correoAlerta" class="form-control mb-3" placeholder="tu@correo.cl">
-
-                            <label style="font-size:0.8rem; font-weight:600; color:#555;">
-                                <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp
-                                <span class="badge-proximamente ml-1">Próximamente</span>
-                            </label>
-                            <input type="tel" id="wspAlerta" class="form-control mb-3" placeholder="+56 9 XXXX XXXX" disabled>
-
-                            <p style="font-size:0.8rem; font-weight:600; color:#555; margin-bottom:0.4rem;">Recordar con:</p>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="alerta1h">
-                                <label class="form-check-label" for="alerta1h">1 hora antes</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="alerta24h">
-                                <label class="form-check-label" for="alerta24h">24 horas antes</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="alerta48h">
-                                <label class="form-check-label" for="alerta48h">48 horas antes</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="alerta72h">
-                                <label class="form-check-label" for="alerta72h">72 horas antes</label>
-                            </div>
-                            <button class="btn btn-primary btn-block mt-3" onclick="activarAlertas(oferta)">
-                                <i class="fas fa-bell mr-1"></i> Activar Alertas
-                            </button>
-                        </div>
-
-                        <!-- Avisar resultado -->
-                        <div class="panel-card">
-                            <h5><i class="fas fa-paper-plane mr-1"></i> Avisar Resultado</h5>
-                            <label style="font-size:0.8rem; font-weight:600; color:#555;">Correo de aviso</label>
-                            <input type="email" id="correoAviso" class="form-control mb-2" required placeholder="tu@correo.cl">
-                            <button class="btn btn-primary btn-block" id="btnAvisarResultado" type="button">
-                                Enviar Aviso
-                            </button>
-                            <p id="mensajeSuscripcion" style="display: none;" class="mt-2"></p>
-                        </div>
-
-                        <button id="verMercadoPublico" class="btn btn-outline-success btn-block">
-                            <i class="fas fa-external-link-alt mr-1"></i> Ver en Mercado Público
-                        </button>
-                    </div>
-
                 </div>
-            </div>
-        </div>
+
+            </div><!-- /tab licitaciones -->
+
+            <!-- ══ TAB 2: COMPRA ÁGIL ══════════════════════ -->
+            <div class="tab-pane fade" id="compra-agil" role="tabpanel" aria-labelledby="compra-agil-tab">
+
+                <!-- Banner en construcción -->
+                <div class="alert-construccion">
+                    <i class="fas fa-hard-hat"></i>
+                    <div>
+                        <strong>En construcción</strong> — Estamos integrando la API de Compra Ágil de ChileCompra.
+                        La búsqueda y alertas estarán disponibles próximamente.
+                    </div>
+                </div>
+
+                <!-- Búsqueda (shell deshabilitado) -->
+                <div class="section-card mb-4">
+                    <div class="section-card-body">
+                        <div class="form-group mb-0">
+                            <label style="font-size:0.8rem; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:0.5px;">Búsqueda de Compra Ágil</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Ej: organismo, producto, código..." disabled>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" disabled>
+                                        <i class="fas fa-search mr-1"></i> Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview de funcionalidades -->
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <h2><i class="fas fa-bolt mr-2"></i>¿Qué encontrarás aquí?</h2>
+                    </div>
+                    <div class="section-card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="panel-card feature-preview-card">
+                                    <i class="fas fa-search feature-icon"></i>
+                                    <h5>Búsqueda rápida</h5>
+                                    <p>Filtra por organismo, categoría o monto de compra directamente.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="panel-card feature-preview-card">
+                                    <i class="fas fa-bell feature-icon"></i>
+                                    <h5>Alertas</h5>
+                                    <p>Recibe avisos de nuevas compras ágiles en tu área de interés.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="panel-card feature-preview-card">
+                                    <i class="fas fa-file-excel feature-icon"></i>
+                                    <h5>Exportar</h5>
+                                    <p>Descarga resultados en XLSX para análisis y seguimiento.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /tab compra-agil -->
+
+        </div><!-- /tab-content -->
     </div>
 
     <div class="boton-donacion">
