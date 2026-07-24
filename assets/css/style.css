@@ -28,7 +28,7 @@ body {
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 
-.navbar-brand span {
+.brand-title {
   font-weight: 700;
   font-size: 1.1rem;
   line-height: 1.2;
@@ -173,12 +173,6 @@ h2 {
   border-color: var(--g-border);
 }
 
-/* ─── Mapa ──────────────────────────────────────── */
-#mapa {
-  border: 2px solid var(--g-accent);
-  border-radius: var(--r-md);
-}
-
 /* ─── Modal ─────────────────────────────────────── */
 .modal-content {
   border-radius: var(--r-lg) !important;
@@ -298,12 +292,6 @@ footer p {
   width: 50px;
   height: auto;
   margin-bottom: 10px;
-}
-
-/* ─── Botón donación ────────────────────────────── */
-.boton-donacion {
-  margin-left: 20px;
-  margin-bottom: 1rem;
 }
 
 /* ─── Tabs ──────────────────────────────────────── */

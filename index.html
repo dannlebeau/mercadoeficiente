@@ -28,7 +28,7 @@
                 <a class="navbar-brand d-flex align-items-center" href="#">
                     <img src="./assets/img/Mercado_eficiente_logo.png" alt="Logo" style="width: 40px; height: auto; margin-right: 10px;">
                     <div>
-                        <span>Mercado Eficiente</span>
+                        <span class="brand-title">Mercado Eficiente</span>
                         <span class="by-tag">by Geopolis</span>
                     </div>
                 </a>
@@ -46,26 +46,6 @@
         <div>
             <script async="async" data-cfasync="false" src="//pl25930179.effectiveratecpm.com/f07523496fe9eb4f5efe7b83d5714690/invoke.js"></script>
             <div id="container-f07523496fe9eb4f5efe7b83d5714690"></div>
-        </div>
-    </div>
-
-    <!-- Modal de Bienvenida -->
-    <div id="modalBienvenida" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-seedling mr-2"></i> Bienvenid@ a Mercado Eficiente</h5>
-                </div>
-                <div class="modal-body">
-                    <p>Una plataforma simple y eficaz para explorar licitaciones públicas de Chile por código.</p>
-                    <p>Los montos visibles corresponden a licitaciones en pesos chilenos.</p>
-                    <p>Complementa —no reemplaza— a mercadopublico.cl, con una vista más limpia y directa.</p>
-                    <p>Sugerencias al correo <a href="mailto:contacto@mercadoeficiente.cl">contacto@mercadoeficiente.cl</a></p>
-                </div>
-                <div class="modal-footer">
-                    <button id="btnAceptar" type="button" class="btn btn-primary">Entendido</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -211,7 +191,7 @@
                                         <input class="form-check-input" type="checkbox" id="alerta72h">
                                         <label class="form-check-label" for="alerta72h">72 horas antes</label>
                                     </div>
-                                    <button class="btn btn-primary btn-block mt-3" onclick="activarAlertas(oferta)">
+                                    <button class="btn btn-primary btn-block mt-3" onclick="activarAlertas()">
                                         <i class="fas fa-bell mr-1"></i> Activar Alertas
                                     </button>
                                 </div>
@@ -304,10 +284,6 @@
         </div><!-- /tab-content -->
     </div>
 
-    <div class="boton-donacion">
-        <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="dannlebeau" data-color="#5F7FFF" data-emoji="📖" data-font="Cookie" data-text="Buy me a book" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00"></script>
-    </div>
-
     <!-- Footer -->
     <section>
         <div class="container">
@@ -315,8 +291,8 @@
                 <a href="#">
                     <img src="./assets/img/Dann LeBeau-logos_black.png" alt="Logo" class="logo_esquina">
                 </a>
-                <p>Elaborado por Dann LeBeau &nbsp;·&nbsp; Mercado Eficiente by Geopolis</p>
-                <p>Todos los derechos reservados &copy; 2025</p>
+                <p>Elaborado por Dann LeBeau &nbsp;·&nbsp; Mercado Eficiente by <a href="https://www.geopolis.cl" target="_blank" rel="noopener">Geopolis</a></p>
+                <p>Todos los derechos reservados &copy; 2026</p>
                 <ul class="social-icons">
                     <li><a href="#"><i class="fab fa-facebook"></i></a></li>
                     <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
@@ -328,7 +304,6 @@
     </section>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>

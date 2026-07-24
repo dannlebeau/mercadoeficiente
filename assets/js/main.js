@@ -1,25 +1,33 @@
+// Disuade la exploración casual del código vía clic derecho (no es
+// protección real: Ctrl+U/F12 siguen funcionando).
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Licitación actualmente mostrada — la usan las Alertas de Cierre para saber
+// a qué oferta real corresponde el cronómetro (antes usaban un dato de prueba
+// fijo, ver activarAlertas).
+let ofertaActual = null;
+
 async function obtenerOfertas() {
     const tema = document.getElementById("temaInput").value.trim();
-    const apiKey = "B23CB497-A854-4680-B86F-AE4E69F019E2"; // Tu clave de API
-    const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${tema}&ticket=${apiKey}`;
 
     if (!tema) {
         alert("Por favor, ingresa un código de temática.");
         return;
     }
 
-    console.log('URL generada:', url); // Verificar la URL generada
+    const url = `/api/licitaciones?codigo=${encodeURIComponent(tema)}`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
-        console.log("Respuesta de la API:", data); // Verificar la estructura de la respuesta
-        
+
         if (data.Listado && data.Listado.length > 0) {
             const oferta = data.Listado[0]; // Obtén la primera oferta
+            ofertaActual = oferta;
             mostrarOfertas(data.Listado);
             iniciarCronometro(oferta); // Llama a iniciarCronometro pasando la oferta
         } else {
+            ofertaActual = null;
             alert("No se encontraron ofertas para el código ingresado.");
         }
     } catch (error) {
@@ -107,30 +115,6 @@ function mostrarOfertas(ofertas) {
         }
     });
 }
-
-// Datos de coordenadas de ejemplo
-const comunasCoords = {
-    "Santiago": { lat: -33.45694, lng: -70.64827 },
-    "Valparaíso": { lat: -33.04724, lng: -71.61269 },
-    // Agrega más comunas según necesites
-};
-
-// Función para obtener las coordenadas según el nombre de la comuna
-function obtenerCoordenadas(comuna) {
-    return comunasCoords[comuna] || null;
-}
-
-
-//---JQuery//
-$(document).ready(function () {
-    // Mostrar el modal de bienvenida al cargar la página
-    $('#modalBienvenida').modal('show');
-
-    // Ocultar el modal cuando se hace clic en "Aceptar"
-    $('#btnAceptar').click(function () {
-        $('#modalBienvenida').modal('hide');
-    });
-});
 
 //Cronometro
 
@@ -246,50 +230,78 @@ function exportarXLSX() {
 
 //Boton de enviar Alerta
 
- // Define oferta en el ámbito global
-
-const oferta = {
-    Fechas: {
-        FechaCierre: "2024-12-01T12:00:00Z" // Asegúrate de usar un formato válido
-    }
-};
-
 function activarAlertas() {
-    const email = document.getElementById("correoAlerta").value;
-    const fechaCierre = new Date(oferta.Fechas.FechaCierre);
-    const ahora = new Date();
-    const tiempoRestante = fechaCierre - ahora;
+    if (!ofertaActual) {
+        alert("Primero busca una licitación.");
+        return;
+    }
 
-    alert("Alerta activada");
+    const email = document.getElementById("correoAlerta").value.trim();
+    if (!email) {
+        alert("Ingresa un correo para las alertas.");
+        return;
+    }
 
+    const fechaCierre = new Date(ofertaActual.Fechas.FechaCierre);
     if (isNaN(fechaCierre.getTime())) {
         console.error("Fecha de cierre inválida");
         return;
     }
 
-    console.log(`Tiempo restante para la oferta: ${tiempoRestante} ms`);
+    // Los avisos se agendan con setTimeout: solo se disparan mientras esta
+    // pestaña siga abierta. Notificaciones reales tras cerrar el navegador
+    // requerirían un backend con tareas programadas, que este sitio (estático)
+    // todavía no tiene.
+    const opciones = [
+        { id: "alerta1h", horas: 1, texto: "1 hora" },
+        { id: "alerta24h", horas: 24, texto: "24 horas" },
+        { id: "alerta48h", horas: 48, texto: "48 horas" },
+        { id: "alerta72h", horas: 72, texto: "72 horas" },
+    ];
 
-    if (document.getElementById("alerta1h").checked) {
-        console.log("Configurando alerta de 1 hora...");
-        setTimeout(() => enviarAlerta(email, "Te recordamos que tu oferta cierra en 1 hora."), tiempoRestante - (1000 * 60 * 60));
+    let agendadas = 0;
+    let yaVencidas = 0;
+
+    opciones.forEach(({ id, horas, texto }) => {
+        if (!document.getElementById(id).checked) return;
+
+        const ahora = new Date();
+        const delay = fechaCierre - ahora - horas * 60 * 60 * 1000;
+
+        if (delay <= 0) {
+            yaVencidas++;
+            return;
+        }
+
+        setTimeout(() => enviarAlerta(email, `Te recordamos que tu oferta cierra en ${texto}.`), delay);
+        agendadas++;
+    });
+
+    if (agendadas === 0 && yaVencidas === 0) {
+        alert("Marca al menos un recordatorio.");
+        return;
     }
+
+    let mensaje = agendadas > 0
+        ? `Se agendaron ${agendadas} recordatorio(s) (mantén esta pestaña abierta).`
+        : "No se agendó ningún recordatorio.";
+    if (yaVencidas > 0) {
+        mensaje += ` ${yaVencidas} ya no aplican porque quedan menos horas que las seleccionadas.`;
+    }
+    alert(mensaje);
 }
-    if (document.getElementById("alerta24h").checked) {
-        console.log("Configurando alerta de 24 horas...");
-        setTimeout(() => enviarAlerta(email, "Te recordamos que tu oferta cierra en 24 horas."), tiempoRestante - (1000 * 60 * 60 * 24));
-    }
-    if (document.getElementById("alerta48h").checked) {
-        console.log("Configurando alerta de 48 horas...");
-        setTimeout(() => enviarAlerta(email, "Te recordamos que tu oferta cierra en 48 horas."), tiempoRestante - (1000 * 60 * 60 * 24 * 2));
-    }
-    if (document.getElementById("alerta72h").checked) {
-        console.log("Configurando alerta de 72 horas...");
-        setTimeout(() => enviarAlerta(email, "Te recordamos que tu oferta cierra en 72 horas."), tiempoRestante - (1000 * 60 * 60 * 24 * 3));
-    }
 
 function enviarAlerta(email, mensaje) {
-    // Implementa aquí la lógica para enviar el correo
-    console.log(`Enviando alerta a ${email}: ${mensaje}`);
+    emailjs.send("service_5gyggkr", "template_i2hcmdj", {
+        to_email: email,
+        subject: "Recordatorio de cierre — Mercado Eficiente",
+        message: mensaje,
+        reply_to: email,
+    }).then(() => {
+        console.log(`Alerta enviada a ${email}: ${mensaje}`);
+    }, (error) => {
+        console.error("Error al enviar alerta:", error);
+    });
 }
 
 
@@ -308,79 +320,67 @@ $(document).ready(function () {
 });
 
 function verificarResultados() {
-    const tema = document.getElementById("temaInput").value; // Código del tema
-    console.log("Código del tema ingresado:", tema); // Debug: Verifica el valor del tema ingresado
-    
-    const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${tema}&ticket=B23CB497-A854-4680-B86F-AE4E69F019E2`; // URL de la API
-    console.log("URL de la API:", url); // Debug: Verifica la URL que estamos usando para la consulta
-    
-    fetch(url)
+    const tema = document.getElementById("temaInput").value.trim();
+    const email = document.getElementById("correoAviso").value.trim();
+
+    if (!tema) {
+        alert("Ingresa un código de temática.");
+        return;
+    }
+    if (!email) {
+        alert("Ingresa un correo para el aviso.");
+        return;
+    }
+
+    fetch(`/api/licitaciones?codigo=${encodeURIComponent(tema)}`)
         .then(response => {
-            console.log("Respuesta de la API:", response); // Debug: Verifica la respuesta de la API
             if (!response.ok) {
                 throw new Error("Network response was not ok: " + response.statusText);
             }
             return response.json();
         })
         .then(data => {
-            console.log("Datos de la API:", data); // Debug: Verifica los datos recibidos de la API
-            
-            if (data && data.Listado && data.Listado.length > 0) {
-                const proyecto = data.Listado[0]; // Obtener el primer proyecto
-                const item = proyecto.Items.Listado[0]; // Obtener el primer item
+            const proyecto = data && data.Listado && data.Listado[0];
+            const item = proyecto && proyecto.Items && proyecto.Items.Listado && proyecto.Items.Listado[0];
 
-                console.log("Proyecto:", proyecto); // Debug: Verifica el primer proyecto
-                console.log("Item del proyecto:", item); // Debug: Verifica el primer item
+            if (item && item.Adjudicacion && item.Adjudicacion.NombreProveedor) {
+                const cantidad = item.Adjudicacion.Cantidad;
+                const montoUnitario = item.Adjudicacion.MontoUnitario;
+                const total = cantidad * montoUnitario;
 
-                if (item.Adjudicacion && item.Adjudicacion.NombreProveedor) {
-                    // Calcular el total solo si existe la adjudicación
-                    const cantidad = item.Adjudicacion.Cantidad;
-                    const montoUnitario = item.Adjudicacion.MontoUnitario;
-                    const total = cantidad * montoUnitario; // Calcular el total
-                    
-                    // Construir el mensaje con la URL como hipervínculo
-                    const mensaje = `Se ha adjudicado el Proyecto "${proyecto.Nombre}" al Proveedor "${item.Adjudicacion.NombreProveedor}", Rut "${item.Adjudicacion.RutProveedor}" con una cantidad de "${cantidad}" por un monto unitario de $"${montoUnitario}", siendo el total el resultado de esto: ${cantidad} * ${montoUnitario} = $${total}. Para más detalles, ver "${proyecto.Adjudicacion.UrlActa}"`;
+                const urlActa = (proyecto.Adjudicacion && proyecto.Adjudicacion.UrlActa) || 'No disponible';
+                const mensaje = `Se ha adjudicado el Proyecto "${proyecto.Nombre}" al Proveedor "${item.Adjudicacion.NombreProveedor}", Rut "${item.Adjudicacion.RutProveedor}" con una cantidad de "${cantidad}" por un monto unitario de $"${montoUnitario}", siendo el total el resultado de esto: ${cantidad} * ${montoUnitario} = $${total}. Para más detalles, ver "${urlActa}"`;
 
-                    console.log("Mensaje preparado:", mensaje); // Debug: Verifica el mensaje preparado
-
-                    const email = document.getElementById("correoAviso").value; // Obtener el correo
-                    console.log("Correo al que se enviará el mensaje:", email); // Debug: Verifica el correo ingresado
-                    enviarCorreo(email, mensaje); // Enviar correo
-                } else {
-                    alert("No se encontró información de adjudicación.");
-                }
+                enviarCorreo(email, mensaje);
             } else {
-                alert("No se encontró información de adjudicación.");
+                alert("Aún no hay información de adjudicación para esta licitación.");
             }
         })
         .catch(error => {
             console.error("Error al verificar los resultados:", error);
-            alert("Hubo un problema al verificar los resultados. Verifica la consola.");
+            alert("Hubo un problema al verificar los resultados.");
         });
 }
 
 function enviarCorreo(email, mensaje) {
     const templateParams = {
-        to_email: email, // Correo del destinatario
-        subject: "Notificación de Adjudicación de Proyecto", // Asunto
-        message: mensaje, // El mensaje que hemos preparado
+        to_email: email,
+        subject: "Notificación de Adjudicación de Proyecto",
+        message: mensaje,
         reply_to: email
     };
 
-    console.log("Enviando correo con estos parámetros:", templateParams); // Debug: Verifica los parámetros antes de enviar el correo
-
-    emailjs.send("service_5gyggkr", "template_i2hcmdj", templateParams) // Asegúrate de usar el Template ID correcto
-        .then(function(response) {
-            console.log('Correo enviado exitosamente', response);
-            alert("Correo enviado exitosamente.");
+    emailjs.send("service_5gyggkr", "template_i2hcmdj", templateParams)
+        .then(function() {
+            mostrarMensajeSuscripcion();
         }, function(error) {
-            console.error('Error al enviar correo', error); // Línea comentada
+            console.error('Error al enviar correo', error);
             alert("Error al enviar el correo.");
         });
 }
 
 function mostrarMensajeSuscripcion() {
-    $("#mensajeSuscripcion").text("Suscrito al aviso").fadeIn().delay(3000).fadeOut(); // Muestra el mensaje por 3 segundos
+    $("#mensajeSuscripcion").text("Correo enviado ✓").fadeIn().delay(3000).fadeOut();
 }
 
 
