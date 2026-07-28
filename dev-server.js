@@ -59,7 +59,8 @@ const server = http.createServer((req, res) => {
     return manejarLicitaciones(url, res);
   }
 
-  const filePath = path.join(__dirname, url.pathname === '/' ? 'index.html' : url.pathname);
+  const pathname = decodeURIComponent(url.pathname);
+  const filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
   fs.readFile(filePath, (err, content) => {
     if (err) {
       res.writeHead(404);

@@ -42,25 +42,15 @@
 <body>
     <div class="container mt-4 mb-5">
         <h1 class="text-center mb-3">Mercado Público</h1>
+        <p class="lead-intro text-center mb-4">
+            Busca una licitación pública de Chile por su código de temática y mirá de un vistazo
+            el desglose del monto, las fechas clave del proceso y el organismo comprador, sin
+            perderte en el detalle de mercadopublico.cl.
+        </p>
 
-        <!-- Pestañas principales -->
-        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="licitaciones-tab" data-toggle="tab" href="#licitaciones" role="tab" aria-controls="licitaciones" aria-selected="true">
-                    <i class="fas fa-file-contract"></i> Licitaciones
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="compra-agil-tab" data-toggle="tab" href="#compra-agil" role="tab" aria-controls="compra-agil" aria-selected="false">
-                    <i class="fas fa-bolt"></i> Compra Ágil
-                </a>
-            </li>
-        </ul>
+        <div id="mainTabContent">
 
-        <div class="tab-content" id="mainTabContent">
-
-            <!-- ══ TAB 1: LICITACIONES ══════════════════════ -->
-            <div class="tab-pane fade show active" id="licitaciones" role="tabpanel" aria-labelledby="licitaciones-tab">
+            <div id="licitaciones">
 
                 <!-- Búsqueda -->
                 <div class="section-card mb-4">
@@ -207,72 +197,38 @@
                     </div>
                 </div>
 
-            </div><!-- /tab licitaciones -->
+            </div><!-- /licitaciones -->
 
-            <!-- ══ TAB 2: COMPRA ÁGIL ══════════════════════ -->
-            <div class="tab-pane fade" id="compra-agil" role="tabpanel" aria-labelledby="compra-agil-tab">
+        </div><!-- /mainTabContent -->
 
-                <!-- Banner en construcción -->
-                <div class="alert-construccion">
-                    <i class="fas fa-hard-hat"></i>
-                    <div>
-                        <strong>En construcción</strong> — Estamos integrando la API de Compra Ágil de ChileCompra.
-                        La búsqueda y alertas estarán disponibles próximamente.
-                    </div>
-                </div>
-
-                <!-- Búsqueda (shell deshabilitado) -->
-                <div class="section-card mb-4">
-                    <div class="section-card-body">
-                        <div class="form-group mb-0">
-                            <label style="font-size:0.8rem; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:0.5px;">Búsqueda de Compra Ágil</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Ej: organismo, producto, código..." disabled>
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" disabled>
-                                        <i class="fas fa-search mr-1"></i> Buscar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Preview de funcionalidades -->
-                <div class="section-card">
-                    <div class="section-card-header">
-                        <h2><i class="fas fa-bolt mr-2"></i>¿Qué encontrarás aquí?</h2>
-                    </div>
-                    <div class="section-card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="panel-card feature-preview-card">
-                                    <i class="fas fa-search feature-icon"></i>
-                                    <h5>Búsqueda rápida</h5>
-                                    <p>Filtra por organismo, categoría o monto de compra directamente.</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="panel-card feature-preview-card">
-                                    <i class="fas fa-bell feature-icon"></i>
-                                    <h5>Alertas</h5>
-                                    <p>Recibe avisos de nuevas compras ágiles en tu área de interés.</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="panel-card feature-preview-card">
-                                    <i class="fas fa-file-excel feature-icon"></i>
-                                    <h5>Exportar</h5>
-                                    <p>Descarga resultados en XLSX para análisis y seguimiento.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div><!-- /tab compra-agil -->
-
-        </div><!-- /tab-content -->
+        <!-- Contenido explicativo -->
+        <div class="section-card mt-4">
+            <div class="section-card-header">
+                <h2><i class="fas fa-circle-question mr-2"></i>¿Cómo funciona una licitación pública en Chile?</h2>
+            </div>
+            <div class="section-card-body">
+                <p>
+                    Cuando un organismo del Estado necesita comprar bienes o contratar servicios por
+                    sobre un cierto monto, está obligado a hacerlo mediante una licitación pública en
+                    <a href="https://www.mercadopublico.cl" target="_blank" rel="noopener">mercadopublico.cl</a>,
+                    la plataforma oficial de ChileCompra. Cada proceso tiene un código de licitación
+                    único (el "código de temática" que se busca en esta herramienta) y atraviesa, en
+                    general, las mismas etapas:
+                </p>
+                <ul>
+                    <li><strong>Publicación:</strong> el organismo publica las bases y el llamado a ofertar.</li>
+                    <li><strong>Preguntas y respuestas:</strong> los proveedores interesados pueden pedir aclaraciones dentro de un plazo fijado en las bases.</li>
+                    <li><strong>Cierre de ofertas:</strong> fecha y hora límite para presentar una oferta; después de este momento ya no se pueden ingresar nuevas propuestas.</li>
+                    <li><strong>Adjudicación:</strong> el organismo evalúa las ofertas recibidas y publica a qué proveedor (o proveedores) se le adjudica el contrato.</li>
+                </ul>
+                <p class="mb-0">
+                    Mercado Eficiente muestra estas mismas fechas de un vistazo, junto con el
+                    desglose de monto estimado, para que no tengas que revisar cada sección por
+                    separado en el sitio oficial. Para más detalle sobre el proyecto, ver
+                    <a href="acerca-de.html">Acerca de</a>.
+                </p>
+            </div>
+        </div>
 
     </div>
 
@@ -280,7 +236,7 @@
     <section>
         <div class="container">
             <footer>
-                <a href="#">
+                <a href="https://www.geopolis.cl" target="_blank" rel="noopener">
                     <img src="./assets/img/Dann LeBeau-logos_black.png" alt="Logo" class="logo_esquina">
                 </a>
                 <p>Elaborado por Dann LeBeau &nbsp;·&nbsp; Mercado Eficiente by <a href="https://www.geopolis.cl" target="_blank" rel="noopener">Geopolis</a></p>
