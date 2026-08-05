@@ -384,6 +384,58 @@ function mostrarMensajeSuscripcion() {
 }
 
 
+// Licitaciones activas al cargar la página — antes la tabla quedaba vacía
+// hasta que alguien buscaba un código a mano, lo que además de mala UX hacía
+// que la home no tuviera contenido real para un rastreador (Google, etc.).
+// NOTA: "estado=activas" y el campo "CodigoExterno" siguen el patrón
+// documentado de la API de Mercado Público, pero no se probaron contra un
+// ticket real todavía — conviene confirmarlos apenas se despliegue.
+async function cargarLicitacionesRecientes() {
+    try {
+        const response = await fetch('/api/licitaciones?estado=activas');
+        if (!response.ok) return;
+        const data = await response.json();
+        const listado = (data && data.Listado) || [];
+        if (listado.length === 0) return;
+        mostrarListadoTabla(listado.slice(0, 10));
+    } catch (error) {
+        console.error('No se pudo cargar el listado inicial de licitaciones activas:', error);
+    }
+}
+
+function mostrarListadoTabla(ofertas) {
+    const tabla = document.getElementById("tablaOfertas");
+    tabla.innerHTML = "";
+
+    ofertas.forEach(oferta => {
+        const montoEstimado = oferta.MontoEstimado || 0;
+        const iva = montoEstimado * 0.19;
+        const montoNeto = montoEstimado - iva;
+        const codigo = oferta.CodigoExterno || '';
+
+        const fila = `<tr class="fila-licitacion" data-codigo="${codigo}" style="cursor:pointer;">
+            <td>${oferta.Nombre}</td>
+            <td>$ ${montoEstimado.toLocaleString('es-CL')}</td>
+            <td>$ ${iva.toLocaleString('es-CL')}</td>
+            <td>$ ${montoNeto.toLocaleString('es-CL')}</td>
+        </tr>`;
+        tabla.insertAdjacentHTML("beforeend", fila);
+    });
+
+    // Clic en una fila: la busca en detalle, igual que si se hubiera escrito
+    // su código a mano.
+    tabla.querySelectorAll(".fila-licitacion").forEach(fila => {
+        fila.addEventListener("click", () => {
+            const codigo = fila.dataset.codigo;
+            if (!codigo) return;
+            document.getElementById("temaInput").value = codigo;
+            obtenerOfertas();
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", cargarLicitacionesRecientes);
+
 //Hora y fecha al lado derecho
 function actualizarFechaHora() {
     const fechaHoraElemento = document.getElementById("fechaHora");

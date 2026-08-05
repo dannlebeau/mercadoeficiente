@@ -11,12 +11,23 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Servidor no configurado' });
   }
 
+  // La API de Mercado Público soporta tres modos de búsqueda mutuamente
+  // excluyentes: por código, por fecha de publicación (ddmmyyyy) o por estado
+  // (p.ej. "activas"). Este proxy pasa el que venga tal cual.
   const codigo = (req.query.codigo || '').toString().trim();
-  if (!codigo) {
-    return res.status(400).json({ error: 'Falta el parámetro codigo' });
+  const fecha = (req.query.fecha || '').toString().trim();
+  const estado = (req.query.estado || '').toString().trim();
+
+  if (!codigo && !fecha && !estado) {
+    return res.status(400).json({ error: 'Falta el parámetro codigo, fecha o estado' });
   }
 
-  const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${encodeURIComponent(codigo)}&ticket=${ticket}`;
+  const params = new URLSearchParams({ ticket });
+  if (codigo) params.set('codigo', codigo);
+  if (fecha) params.set('fecha', fecha);
+  if (estado) params.set('estado', estado);
+
+  const url = `https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?${params.toString()}`;
 
   try {
     const upstream = await fetch(url);

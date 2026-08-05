@@ -37,12 +37,18 @@ async function manejarLicitaciones(url, res) {
     return res.end(JSON.stringify({ error: 'Falta MP_API_TICKET en .env' }));
   }
   const codigo = (url.searchParams.get('codigo') || '').trim();
-  if (!codigo) {
+  const fecha = (url.searchParams.get('fecha') || '').trim();
+  const estado = (url.searchParams.get('estado') || '').trim();
+  if (!codigo && !fecha && !estado) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'Falta el parámetro codigo' }));
+    return res.end(JSON.stringify({ error: 'Falta el parámetro codigo, fecha o estado' }));
   }
+  const params = new URLSearchParams({ ticket });
+  if (codigo) params.set('codigo', codigo);
+  if (fecha) params.set('fecha', fecha);
+  if (estado) params.set('estado', estado);
   try {
-    const upstream = await fetch(`https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?codigo=${encodeURIComponent(codigo)}&ticket=${ticket}`);
+    const upstream = await fetch(`https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json?${params.toString()}`);
     const data = await upstream.json();
     res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
