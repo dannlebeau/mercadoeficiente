@@ -1,0 +1,47 @@
+# Escaneo de seguridad: workflows inseguros (zizmor) y secretos en el historial (gitleaks).
+name: Seguridad
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      # Advanced Security requiere un plan de pago en repos privados: los resultados van al log.
+      - name: Revisar workflows
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          advanced-security: false
+          min-severity: low
+          version: 1.32.0
+
+  gitleaks:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout con historial completo
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Imagen fijada por digest, sin red y con el repo en solo lectura.
+      - name: Buscar secretos
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            -v "$GITHUB_WORKSPACE:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            git --redact --no-banner /repo
