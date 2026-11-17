@@ -1,5 +1,39 @@
-.env
+# Dependencias y artefactos (se regeneran)
 node_modules/
+dist/
+.vite/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
 
-.vercel
-.env*
+# Entorno local
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Datos locales que se regeneran desde una fuente
+data/
+
+# Configuración local de herramientas
+.cursor/
+.gemini/
+.impeccable/
+.vscode/
+
+# Windows
+*.stackdump
+Thumbs.db
+Desktop.ini
+
+# Respaldos de scripts de instalación
+*.bak-*
+
+# Vercel CLI
+.vercel/
+
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo

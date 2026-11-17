@@ -1,0 +1,56 @@
+# Tipos, pruebas (con Postgres real) y build en cada PR.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:a77aa70e641402a21411b92b721c58d10f23b50ae5fdd2333efd22d166e1e5f7
+        env:
+          POSTGRES_USER: prueba
+          POSTGRES_PASSWORD: prueba
+          POSTGRES_DB: prueba
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U prueba"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Base desechable del servicio de arriba; si falta, tests/db.test.ts falla.
+      DATABASE_URL: postgres://prueba:prueba@localhost:5432/prueba
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar
+        run: npm ci --ignore-scripts
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Build
+        run: npm run build

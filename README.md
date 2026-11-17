@@ -1,46 +1,48 @@
-# Mercado Eficiente
+# Mercado Eficiente _(mercadoeficiente)_
 
-🔗 **Se ve acá: [www.mercadoeficiente.cl](https://www.mercadoeficiente.cl)**
+Licitaciones públicas de Chile gratis: busca por palabra, región, rubro o monto, sin registro.
 
-🗺️ Mercado Eficiente by Geopolis
-Visualizador simple de licitaciones públicas de Chile (ChileCompra), pensado como complemento —no reemplazo— de mercadopublico.cl.
+🔗 [www.mercadoeficiente.cl](https://www.mercadoeficiente.cl)
+
+Los datos vienen de la API pública de Mercado Público (Dirección ChileCompra). Una ingesta cada hora los guarda en Postgres para buscarlos con texto completo en español; cada licitación tiene su ficha indexable con fechas, montos, productos, adjudicación, cronómetro y alerta de cierre para el calendario. La hoja de ruta está en [`PLAN.md`](PLAN.md).
+
+## Instalación
+
+Requiere Node.js 22.18 o superior.
+
+```sh
+npm ci
+cp .env.example .env   # completar MP_API_TICKET y, si hay base, DATABASE_URL
+npm run migrar         # solo si hay DATABASE_URL
+```
+
+## Uso
+
+```sh
+npm run dev            # http://localhost:3000
+npm run ingesta        # trae licitaciones a la base (gasta cuota del ticket)
+npm run typecheck
+npm test               # las pruebas de base se saltan sin DATABASE_URL (en CI son obligatorias)
+```
+
+Sin `DATABASE_URL` el sitio funciona solo con búsqueda por código (consulta la API en vivo).
 
 ## Arquitectura
 
-Sitio estático (HTML/CSS/JS, sin build) + una función serverless (`api/licitaciones.js`) que hace de proxy hacia la API de Mercado Público. El ticket de integración de ChileCompra vive solo en el servidor (variable de entorno `MP_API_TICKET`), nunca en el código que llega al navegador.
+| Pieza | Dónde |
+|---|---|
+| Web (Next.js, React, TypeScript) | `app/`, `components/` |
+| Cliente de la API, búsqueda, ingesta | `lib/` |
+| Esquema de la base | `db/migraciones/` |
+| Scripts (`migrar`, `ingesta`) | `scripts/` |
+| Ingesta programada (cada hora) | `.github/workflows/ingesta.yml` |
 
-Esto requiere una plataforma con soporte de funciones serverless — **Vercel** (recomendado, cero configuración adicional para el contenido de `/api`).
+Despliegue en Vercel con las variables `MP_API_TICKET` y `DATABASE_URL`. La ingesta corre en GitHub Actions con los secretos del repo del mismo nombre.
 
-## Configuración y despliegue (Vercel)
+## Contribuir
 
-1. Importar el repo en Vercel.
-2. En **Project Settings → Environment Variables**, agregar `MP_API_TICKET` con el ticket real de ChileCompra (ver `.env.example`).
-3. Apuntar el dominio `www.mercadoeficiente.cl` al proyecto desde **Project Settings → Domains**.
-
-## Desarrollo local
-
-Un servidor estático puro (Live Server, etc.) no puede ejecutar `api/licitaciones.js` — las búsquedas fallarían. Para probar en local con la API funcionando:
-
-1. Copiar `.env.example` a `.env` y completar `MP_API_TICKET`.
-2. `node dev-server.js`
-3. Abrir `http://localhost:3000`
-
-(`dev-server.js` es un servidor de desarrollo sin dependencias que emula el proxy; no se usa en producción, ahí corre `api/licitaciones.js` como función serverless de Vercel.)
-
-## Estructura
-
-```
-├── index.html
-├── api/
-│   └── licitaciones.js   # Proxy serverless (producción) — oculta el ticket de ChileCompra
-├── dev-server.js         # Servidor de desarrollo local (emula el proxy)
-├── assets/
-│   ├── css/style.css
-│   ├── js/main.js
-│   └── img/
-└── .env.example
-```
+Los cambios se proponen con una rama y un PR hacia `main` (ver `AGENTS.md`). Preguntas y errores: [issues del repo](https://github.com/dannlebeau/mercadoeficiente/issues).
 
 ## Licencia
 
-Elaborado por Dann LeBeau · Mercado Eficiente by Geopolis. Todos los derechos reservados © 2026.
+UNLICENSED © Dann LeBeau · Geopolis. Datos: Dirección ChileCompra.
