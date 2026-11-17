@@ -2,7 +2,7 @@
 
 Objetivo: que Mercado Eficiente sea **la** plataforma de acceso gratuito a licitaciones y compras públicas de Chile, cubriendo lo que hoy la competencia cobra. Sustento: anuncios (AdSense) sobre tráfico orgánico, sin muros de pago.
 
-Estado: **análisis y hoja de ruta listos; ninguna fase iniciada.** Cada fase se hace en su propia rama + PR.
+Estado: **Fase 0 hecha en la rama `fix/fase-0-seguridad` (versión 5.0.2), pendiente de PR y de dos acciones manuales (ver Fase 0).** Cada fase se hace en su propia rama + PR.
 
 ---
 
@@ -61,10 +61,12 @@ Cada paso dice **cómo se demuestra** que funciona.
 
 ### Fase 0 — Ordenar la casa y cerrar riesgos (sitio actual, sin migrar)
 1. Agregar base del repo desde `dotfiles/templates/` (`CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md`, `.github/`). → El PR muestra los checks changelog, zizmor y gitleaks en verde.
-2. Quitar EmailJS del navegador: endpoint `api/avisar.js` que envía desde el servidor, con validación y límite por IP. Rotar las claves de EmailJS. → `grep emailjs assets/` vacío; un POST con correo inválido devuelve 400; 6 envíos seguidos desde la misma IP devuelven 429.
-3. Escapar datos de la API (`textContent` en vez de HTML). → Probar con un `Nombre` que contenga `<img onerror>` en el dev-server: se ve como texto.
-4. Corregir IVA. → Total $119.000 muestra neto $100.000 e IVA $19.000.
-5. Quitar bloqueo de clic derecho y avisar con claridad que las alertas actuales no son reales (o esconderlas hasta Fase 2). → Revisión manual en el navegador.
+2. Quitar EmailJS del navegador. **Cambio de enfoque:** en vez de un endpoint de correo (un relay con límite por IP en serverless sigue siendo abusable), las alertas de cierre se descargan como `.ics` con recordatorios y el resultado de adjudicación se muestra en pantalla. El correo real llega en la Fase 2 con cuentas. → `grep emailjs` vacío en `index.html` y `assets/`. ✅
+3. Escapar datos de la API (`textContent` en vez de HTML). → Prueba en Node con `Nombre = <img onerror>`: queda como texto en la celda. ✅
+4. Corregir IVA. → Total $119.000 da neto $100.000 e IVA $19.000 (prueba en Node). ✅
+5. Quitar bloqueo de clic derecho. ✅
+6. **Manual (dueño del repo):** rotar el ticket de ChileCompra, que está en el historial público de git (commit `4810d29`), y regenerar las claves de EmailJS (o borrar el servicio). → El ticket nuevo solo está en Vercel; el viejo devuelve error en la API.
+7. Pendiente de verificar en navegador real: buscar una licitación en producción (preview de Vercel), descargar el `.ics` e importarlo en Google Calendar.
 
 ### Fase 1 — Nueva plataforma: buscador abierto
 1. Proyecto Next.js + TS en la misma repo (rama), con selector de tema. → `pnpm build` en CI verde; tema persiste al recargar.

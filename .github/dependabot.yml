@@ -1,0 +1,15 @@
+# Mantiene al día los SHA de las Actions. Cada actualización llega como PR para revisión humana.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      actions:
+        patterns:
+          - "*"
