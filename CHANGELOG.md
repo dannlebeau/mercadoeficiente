@@ -4,6 +4,27 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [SemVer](https://semver.org/lang/es/).
 
+## [5.1.0] - 2026-11-17
+
+### Added
+
+- Nueva plataforma en Next.js 16 + React 19 + TypeScript que reemplaza el sitio estático.
+- Buscador gratis y sin registro: palabra clave (español, sin distinguir tildes), región, rubro (segmento UNSPSC), monto mínimo, estado y orden. Un código exacto lleva directo a su ficha.
+- Ficha indexable por licitación (`/licitacion/[codigo]`): organismo, fechas clave en hora de Chile, monto con neto e IVA referenciales, productos, adjudicación, cronómetro y alerta de cierre `.ics`.
+- Base Postgres (`db/migraciones/001_inicial.sql`) e ingesta horaria (`lib/ingesta.ts`, `.github/workflows/ingesta.yml`) con presupuesto por corrida, tope diario y registro de consultas para no pasar las 10.000 del ticket.
+- `sitemap.xml` con las fichas y `robots.txt` generados por la app.
+- Selector de tema Sistema / Claro / Oscuro.
+- CI (`.github/workflows/ci.yml`): tipos, pruebas con Postgres real y build.
+
+### Changed
+
+- `acerca-de` y `privacidad` pasan a rutas de Next.js; las URLs `.html` antiguas redirigen. La política de privacidad ya no menciona EmailJS.
+- Las fechas de la API se interpretan en hora de Chile también en el servidor (antes dependían de la zona del navegador).
+
+### Removed
+
+- Sitio estático (`index.html`, `assets/`, jQuery, Bootstrap, exportación XLSX), `api/licitaciones.js` y `dev-server.js`. Quedan en el historial de git.
+
 ## [5.0.3] - 2026-11-17
 
 ### Fixed
@@ -46,6 +67,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - `PLAN.md`: análisis de la competencia (6 plataformas de licitaciones), diagnóstico del sitio actual y hoja de ruta por fases para convertir Mercado Eficiente en una plataforma gratuita.
 - `CHANGELOG.md`.
 
+[5.1.0]: https://github.com/dannlebeau/mercadoeficiente/compare/v5.0.3...v5.1.0
 [5.0.3]: https://github.com/dannlebeau/mercadoeficiente/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/dannlebeau/mercadoeficiente/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/dannlebeau/mercadoeficiente/releases/tag/v5.0.1

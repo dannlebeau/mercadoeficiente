@@ -2,7 +2,11 @@
 
 Objetivo: que Mercado Eficiente sea **la** plataforma de acceso gratuito a licitaciones y compras públicas de Chile, cubriendo lo que hoy la competencia cobra. Sustento: anuncios (AdSense) sobre tráfico orgánico, sin muros de pago.
 
-Estado: **Fase 0 hecha en la rama `fix/fase-0-seguridad` (versión 5.0.2), pendiente de PR y de dos acciones manuales (ver Fase 0).** Cada fase se hace en su propia rama + PR.
+Estado (2026-11-17):
+- **Fase 0** hecha (5.0.2), llevada a `main` en 5.0.3 (PR #3). Pendiente manual: rotar el ticket y borrar EmailJS (paso 6).
+- **Fase 1** en la rama `feat/fase-1-plataforma` (5.1.0): pasos 1-5 y 7 hechos y probados en CI; falta conectar Supabase (ver "Puesta en marcha" en la Fase 1), `/organismo` y `/rubro`, y Compra Ágil.
+
+Cada fase se hace en su propia rama + PR.
 
 ---
 
@@ -69,13 +73,21 @@ Cada paso dice **cómo se demuestra** que funciona.
 7. Pendiente de verificar en navegador real: buscar una licitación en producción (preview de Vercel), descargar el `.ics` e importarlo en Google Calendar.
 
 ### Fase 1 — Nueva plataforma: buscador abierto
-1. Proyecto Next.js + TS en la misma repo (rama), con selector de tema. → `pnpm build` en CI verde; tema persiste al recargar.
-2. Esquema Supabase: `licitaciones`, `items`, `organismos`, `proveedores`, `adjudicaciones` con índices full-text en español. → Migraciones aplicadas en una base vacía desde CI.
-3. Ingesta (GitHub Actions cron) idempotente con registro de consultas usadas. → Dos corridas seguidas no duplican filas; log muestra consultas < cuota.
-4. Buscador: palabra clave, región, rubro (UNSPSC), monto, estado, fecha de cierre, organismo. Gratis y **sin registro**. → Test e2e: buscar "aseo" + Región del Biobío devuelve resultados que coinciden.
-5. Páginas SEO: `/licitacion/[codigo]`, `/organismo/[id]`, `/rubro/[id]`, `sitemap.xml`. → Lighthouse SEO ≥ 90; sitemap válido en Search Console.
-6. Compra Ágil: **investigar primero** la fuente disponible (API vs. Datos Abiertos). → Nota en este PLAN con la fuente confirmada antes de implementar.
-7. Migrar `privacidad`, `acerca-de`, `ads.txt` y AdSense; redirigir URLs viejas. → Las URLs actuales responden 200 o 301.
+1. Proyecto Next.js 16 + TS (npm, no pnpm: ya estaba instalado), con selector de tema Sistema/Claro/Oscuro. → `npm run build` y `typecheck` en CI. ✅ (Falta probar en navegador que el tema persista al recargar.)
+2. Esquema: `licitaciones` (con `tsvector` en español sin tildes), `items` (rubro = segmento UNSPSC), `consultas_api`. `organismos`, `proveedores` y `adjudicaciones` separadas quedan para la Fase 3. → Migración aplicada en una base vacía en CI. ✅
+3. Ingesta (`lib/ingesta.ts`, cron cada hora) idempotente, con presupuesto por corrida (300), tope diario propio (8.000 de 10.000) y corte ante 429/5xx. → `tests/db.test.ts`: dos corridas no duplican, la tercera gasta 1 consulta, respeta presupuesto y tope. ✅
+4. Buscador sin registro: palabra (sin tildes), región, rubro, monto, estado y orden; un código exacto lleva a su ficha. → Test: "aseo" + Región del Biobío devuelve solo la abierta. ✅ (Falta: filtro por organismo y fecha de cierre.)
+5. Ficha SEO `/licitacion/[codigo]` (base o, si no está, API en vivo con caché de 15 min), `sitemap.xml` con hasta 45.000 fichas, `robots.txt`. → Prueba local con API falsa: 200, título y canonical, `<script>` del nombre escapado, 3 visitas = 1 consulta, código inexistente o inválido = 404. ✅ `/organismo` y `/rubro`: pendientes. Lighthouse y Search Console: pendientes (necesitan el preview con datos).
+6. Compra Ágil: ChileCompra lanzó una **API Beta de Compra Ágil el 2026-05-22** ([anuncio](https://www.chilecompra.cl/2026/05/chilecompra-presenta-nueva-api-compra-agil-en-feria-de-estado-abierto-2026/)); endpoints y límites sin confirmar. → Siguiente paso: leer la sección Beta de https://www.chilecompra.cl/api/ y probar con el ticket.
+7. `privacidad`, `acerca-de`, `ads.txt` y AdSense migrados; `/index.html`, `/acerca-de.html` y `/privacidad.html` redirigen con 308. → Comprobado con `next start`. ✅
+
+**Puesta en marcha (manual, dueño del repo):**
+1. Crear el proyecto en supabase.com (región São Paulo, plan gratis).
+2. Vercel → Settings → Environment Variables: `DATABASE_URL` = pooler en modo transacción (puerto 6543), para Preview y Production.
+3. GitHub → Settings → Secrets → Actions: `DATABASE_URL` (conexión directa o pooler en modo sesión, puerto 5432) y `MP_API_TICKET`.
+4. Actions → Ingesta → Run workflow (crea las tablas y trae la primera tanda). Con 300 consultas por hora, el detalle de todas las activas tarda ~1 día.
+
+**Datos de la API confirmados** (https://www.chilecompra.cl/api/): 10.000 consultas diarias por ticket, monitoreo por IP, descargas masivas recomendadas de 22:00 a 07:00, y quien republique debe citar como fuente a la Dirección ChileCompra (ya está en el pie y en cada ficha). Sin confirmar: los campos exactos del listado `estado=activas` (la ingesta solo depende de `CodigoExterno`).
 
 ### Fase 2 — Alertas reales y seguimiento (lo que más cobran)
 1. Cuenta con login por enlace al correo (Supabase Auth), sin contraseña. → Registro, logout y re-login funcionan; doble clic en "enviar enlace" no crea dos cuentas.

@@ -32,3 +32,8 @@ Desktop.ini
 
 # Vercel CLI
 .vercel/
+
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo

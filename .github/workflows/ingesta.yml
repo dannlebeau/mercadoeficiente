@@ -1,0 +1,62 @@
+# Trae licitaciones de Mercado Público a la base cada hora.
+# Secretos del repo: DATABASE_URL (Supabase, conexión directa o pooler en modo
+# sesión) y MP_API_TICKET. Sin secretos, el job se salta con un aviso.
+name: Ingesta
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      presupuesto:
+        description: Consultas máximas en esta corrida
+        default: "300"
+
+permissions: {}
+
+# Nunca dos corridas a la vez: compartirían la cuota y el registro de consultas.
+concurrency:
+  group: ingesta
+  cancel-in-progress: false
+
+jobs:
+  ingesta:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      MP_API_TICKET: ${{ secrets.MP_API_TICKET }}
+      INGESTA_PRESUPUESTO: ${{ inputs.presupuesto || '300' }}
+    steps:
+      - name: Revisar secretos
+        id: secretos
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$MP_API_TICKET" ]; then
+            echo "::warning::Faltan los secretos DATABASE_URL o MP_API_TICKET: no se ingesta."
+            echo "listos=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "listos=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.secretos.outputs.listos == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Node
+        if: steps.secretos.outputs.listos == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar
+        if: steps.secretos.outputs.listos == 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Ingestar
+        if: steps.secretos.outputs.listos == 'true'
+        run: npm run ingesta
