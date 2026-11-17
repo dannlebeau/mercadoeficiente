@@ -389,29 +389,28 @@ function mostrarListadoTabla(ofertas) {
     tabla.innerHTML = "";
 
     ofertas.forEach(oferta => {
-        const montoEstimado = oferta.MontoEstimado || 0;
-        const iva = montoEstimado * 0.19;
-        const montoNeto = montoEstimado - iva;
+        const { total, iva, neto } = desglosarIva(oferta.MontoEstimado);
         const codigo = oferta.CodigoExterno || '';
 
-        const fila = `<tr class="fila-licitacion" data-codigo="${codigo}" style="cursor:pointer;">
-            <td>${oferta.Nombre}</td>
-            <td>$ ${montoEstimado.toLocaleString('es-CL')}</td>
-            <td>$ ${iva.toLocaleString('es-CL')}</td>
-            <td>$ ${montoNeto.toLocaleString('es-CL')}</td>
-        </tr>`;
-        tabla.insertAdjacentHTML("beforeend", fila);
-    });
+        // Datos de la API como texto, nunca como HTML (evita XSS).
+        const fila = document.createElement("tr");
+        fila.className = "fila-licitacion";
+        fila.style.cursor = "pointer";
+        [oferta.Nombre || "N/A", formatearPesos(total), formatearPesos(iva), formatearPesos(neto)]
+            .forEach(texto => {
+                const celda = document.createElement("td");
+                celda.textContent = texto;
+                fila.appendChild(celda);
+            });
 
-    // Clic en una fila: la busca en detalle, igual que si se hubiera escrito
-    // su código a mano.
-    tabla.querySelectorAll(".fila-licitacion").forEach(fila => {
+        // Clic en una fila: la busca en detalle, igual que si se hubiera escrito
+        // su código a mano.
         fila.addEventListener("click", () => {
-            const codigo = fila.dataset.codigo;
             if (!codigo) return;
             document.getElementById("temaInput").value = codigo;
             obtenerOfertas();
         });
+        tabla.appendChild(fila);
     });
 }
 

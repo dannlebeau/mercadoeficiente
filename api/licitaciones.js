@@ -32,7 +32,17 @@ module.exports = async (req, res) => {
   try {
     const upstream = await fetch(url);
     const data = await upstream.json();
-    res.setHeader('Cache-Control', 'no-store');
+    // El ticket tiene un límite de 10.000 consultas diarias
+    // (https://www.chilecompra.cl/api/): la CDN de Vercel guarda las respuestas
+    // correctas para que cada visita no gaste una consulta. Los listados
+    // (fecha/estado) cambian menos que el detalle de un código.
+    if (upstream.ok) {
+      const segundos = codigo ? 300 : 900;
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('CDN-Cache-Control', `public, s-maxage=${segundos}, stale-while-revalidate=3600`);
+    } else {
+      res.setHeader('Cache-Control', 'no-store');
+    }
     res.status(upstream.status).json(data);
   } catch (err) {
     console.error('❌ Error consultando Mercado Público:', err.message);
