@@ -140,20 +140,14 @@
                                     <p class="mb-0"><strong>Tiempo restante:</strong> <span id="cronometro">N/A</span></p>
                                 </div>
 
-                                <!-- Alertas de cierre -->
+                                <!-- Alertas de cierre: evento .ics con recordatorios, funcionan
+                                     aunque se cierre la pestaña (el correo llega en la Fase 2 del PLAN) -->
                                 <div class="panel-card">
                                     <h5><i class="fas fa-bell mr-1"></i> Alertas de Cierre</h5>
-
-                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">
-                                        <i class="fas fa-envelope mr-1"></i> Correo electrónico
-                                    </label>
-                                    <input type="email" id="correoAlerta" class="form-control mb-3" placeholder="tu@correo.cl">
-
-                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">
-                                        <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp
-                                        <span class="badge-proximamente ml-1">Próximamente</span>
-                                    </label>
-                                    <input type="tel" id="wspAlerta" class="form-control mb-3" placeholder="+56 9 XXXX XXXX" disabled>
+                                    <p style="font-size:0.85rem; color:#555;">
+                                        Descarga el cierre como evento para tu calendario (Google, Outlook,
+                                        iPhone) con los recordatorios que elijas.
+                                    </p>
 
                                     <p style="font-size:0.8rem; font-weight:600; color:#555; margin-bottom:0.4rem;">Recordar con:</p>
                                     <div class="form-check">
@@ -172,20 +166,18 @@
                                         <input class="form-check-input" type="checkbox" id="alerta72h">
                                         <label class="form-check-label" for="alerta72h">72 horas antes</label>
                                     </div>
-                                    <button class="btn btn-primary btn-block mt-3" onclick="activarAlertas()">
-                                        <i class="fas fa-bell mr-1"></i> Activar Alertas
+                                    <button class="btn btn-primary btn-block mt-3" onclick="descargarRecordatorio()">
+                                        <i class="fas fa-calendar-plus mr-1"></i> Agregar al calendario
                                     </button>
                                 </div>
 
-                                <!-- Avisar resultado -->
+                                <!-- Resultado de adjudicación -->
                                 <div class="panel-card">
-                                    <h5><i class="fas fa-paper-plane mr-1"></i> Avisar Resultado</h5>
-                                    <label style="font-size:0.8rem; font-weight:600; color:#555;">Correo de aviso</label>
-                                    <input type="email" id="correoAviso" class="form-control mb-2" required placeholder="tu@correo.cl">
-                                    <button class="btn btn-primary btn-block" id="btnAvisarResultado" type="button">
-                                        Enviar Aviso
+                                    <h5><i class="fas fa-award mr-1"></i> Resultado de Adjudicación</h5>
+                                    <button class="btn btn-primary btn-block" id="btnVerResultado" type="button" onclick="verResultado()">
+                                        Ver resultado
                                     </button>
-                                    <p id="mensajeSuscripcion" style="display: none;" class="mt-2"></p>
+                                    <p id="resultadoAdjudicacion" class="mt-2 mb-0" style="font-size:0.9rem;"></p>
                                 </div>
 
                                 <button id="verMercadoPublico" class="btn btn-outline-success btn-block">
@@ -250,10 +242,6 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script>
-        emailjs.init("e8UTu4GeibxTJ2A_r");
-    </script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>

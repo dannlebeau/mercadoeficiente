@@ -1,0 +1,41 @@
+# Crea la etiqueta vX.Y.Z de la versión más reciente de CHANGELOG.md, si todavía no existe.
+# Es para repos sin despliegue. Si el repo despliega, usa estos pasos como último job del
+# despliegue, para etiquetar solo lo que llegó a producción.
+name: Etiqueta
+
+on:
+  push:
+    branches: [main]
+    paths: [CHANGELOG.md]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  etiquetar:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: true # este job publica la etiqueta con git push
+
+      - name: Crear la etiqueta
+        run: |
+          version=$(sed -n 's/^## \[\([0-9][0-9.]*\)\] - .*/\1/p' CHANGELOG.md | head -n 1)
+          if [ -z "$version" ]; then
+            echo "CHANGELOG.md no tiene una versión con fecha" >&2
+            exit 1
+          fi
+          tag="v$version"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+            echo "La etiqueta $tag ya existe: no se crea."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "$tag" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"
+          echo "Etiqueta $tag creada en $GITHUB_SHA"
