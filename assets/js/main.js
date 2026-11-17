@@ -1,7 +1,3 @@
-// Disuade la exploración casual del código vía clic derecho (no es
-// protección real: Ctrl+U/F12 siguen funcionando).
-document.addEventListener('contextmenu', (e) => e.preventDefault());
-
 // Licitación actualmente mostrada — la usan las Alertas de Cierre para saber
 // a qué oferta real corresponde el cronómetro (antes usaban un dato de prueba
 // fijo, ver activarAlertas).
@@ -41,17 +37,17 @@ function mostrarOfertas(ofertas) {
     tabla.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
 
     ofertas.forEach(oferta => {
-        const montoEstimado = oferta.MontoEstimado || 0; // Asegúrate de que este valor existe
-        const iva = montoEstimado * 0.19;
-        const montoNeto = montoEstimado - iva;
+        const { total, iva, neto } = desglosarIva(oferta.MontoEstimado);
 
-        const fila = `<tr>
-            <td>${oferta.Nombre}</td>
-            <td>$ ${montoEstimado.toLocaleString('es-CL')}</td>
-            <td>$ ${iva.toLocaleString('es-CL')}</td>
-            <td>$ ${montoNeto.toLocaleString('es-CL')}</td>
-        </tr>`;
-        tabla.insertAdjacentHTML("beforeend", fila);
+        // Los datos vienen de la API: se insertan como texto, nunca como HTML (evita XSS).
+        const fila = document.createElement("tr");
+        [oferta.Nombre || "N/A", formatearPesos(total), formatearPesos(iva), formatearPesos(neto)]
+            .forEach(texto => {
+                const celda = document.createElement("td");
+                celda.textContent = texto;
+                fila.appendChild(celda);
+            });
+        tabla.appendChild(fila);
 
         // Verificar y actualizar detalles de la oferta
         if (document.getElementById("descripcionOferta")) {
@@ -114,6 +110,17 @@ function mostrarOfertas(ofertas) {
             document.getElementById("fechafinalpreguntas").textContent = formatearFecha(oferta.Fechas.FechaFinal) || 'N/A';
         }
     });
+}
+
+// El monto estimado de Mercado Público incluye IVA: neto = total / 1,19.
+function desglosarIva(montoTotal) {
+    const total = Number(montoTotal) || 0;
+    const neto = Math.round(total / 1.19);
+    return { total, iva: total - neto, neto };
+}
+
+function formatearPesos(monto) {
+    return `$ ${monto.toLocaleString('es-CL')}`;
 }
 
 //Cronometro
@@ -228,159 +235,133 @@ function exportarXLSX() {
 }
 
 
-//Boton de enviar Alerta
-
-function activarAlertas() {
+// Alertas de cierre: genera un evento .ics con recordatorios (VALARM). El
+// calendario del usuario avisa aunque cierre esta pestaña; no se envían
+// correos desde el navegador.
+function descargarRecordatorio() {
     if (!ofertaActual) {
         alert("Primero busca una licitación.");
         return;
     }
 
-    const email = document.getElementById("correoAlerta").value.trim();
-    if (!email) {
-        alert("Ingresa un correo para las alertas.");
-        return;
-    }
-
     const fechaCierre = new Date(ofertaActual.Fechas.FechaCierre);
     if (isNaN(fechaCierre.getTime())) {
-        console.error("Fecha de cierre inválida");
+        alert("Esta licitación no tiene una fecha de cierre válida.");
+        return;
+    }
+    if (fechaCierre <= new Date()) {
+        alert("Esta licitación ya cerró.");
         return;
     }
 
-    // Los avisos se agendan con setTimeout: solo se disparan mientras esta
-    // pestaña siga abierta. Notificaciones reales tras cerrar el navegador
-    // requerirían un backend con tareas programadas, que este sitio (estático)
-    // todavía no tiene.
-    const opciones = [
-        { id: "alerta1h", horas: 1, texto: "1 hora" },
-        { id: "alerta24h", horas: 24, texto: "24 horas" },
-        { id: "alerta48h", horas: 48, texto: "48 horas" },
-        { id: "alerta72h", horas: 72, texto: "72 horas" },
-    ];
-
-    let agendadas = 0;
-    let yaVencidas = 0;
-
-    opciones.forEach(({ id, horas, texto }) => {
-        if (!document.getElementById(id).checked) return;
-
-        const ahora = new Date();
-        const delay = fechaCierre - ahora - horas * 60 * 60 * 1000;
-
-        if (delay <= 0) {
-            yaVencidas++;
-            return;
-        }
-
-        setTimeout(() => enviarAlerta(email, `Te recordamos que tu oferta cierra en ${texto}.`), delay);
-        agendadas++;
-    });
-
-    if (agendadas === 0 && yaVencidas === 0) {
+    const horas = [1, 24, 48, 72].filter(h => document.getElementById(`alerta${h}h`).checked);
+    if (horas.length === 0) {
         alert("Marca al menos un recordatorio.");
         return;
     }
 
-    let mensaje = agendadas > 0
-        ? `Se agendaron ${agendadas} recordatorio(s) (mantén esta pestaña abierta).`
-        : "No se agendó ningún recordatorio.";
-    if (yaVencidas > 0) {
-        mensaje += ` ${yaVencidas} ya no aplican porque quedan menos horas que las seleccionadas.`;
-    }
-    alert(mensaje);
+    const ics = generarIcs(ofertaActual, fechaCierre, horas);
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = `cierre-${ofertaActual.CodigoExterno || "licitacion"}.ics`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(enlace.href);
 }
 
-function enviarAlerta(email, mensaje) {
-    emailjs.send("service_5gyggkr", "template_i2hcmdj", {
-        to_email: email,
-        subject: "Recordatorio de cierre — Mercado Eficiente",
-        message: mensaje,
-        reply_to: email,
-    }).then(() => {
-        console.log(`Alerta enviada a ${email}: ${mensaje}`);
-    }, (error) => {
-        console.error("Error al enviar alerta:", error);
-    });
+function fechaIcs(fecha) {
+    return fecha.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+
+// Escapa texto según RFC 5545 (\ ; , y saltos de línea).
+function textoIcs(texto) {
+    return String(texto || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/[;,]/g, m => "\\" + m)
+        .replace(/\r?\n/g, "\\n");
+}
+
+function generarIcs(oferta, fechaCierre, horas) {
+    const codigo = oferta.CodigoExterno || "";
+    const titulo = `Cierre licitación ${codigo}: ${oferta.Nombre || ""}`;
+    const url = `https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=${encodeURIComponent(codigo)}`;
+    const alarmas = horas.map(h => [
+        "BEGIN:VALARM",
+        "ACTION:DISPLAY",
+        `DESCRIPTION:${textoIcs(`Cierra en ${h} hora(s): ${titulo}`)}`,
+        `TRIGGER:-PT${h}H`,
+        "END:VALARM",
+    ].join("\r\n"));
+
+    return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Mercado Eficiente//Alertas de cierre//ES",
+        "BEGIN:VEVENT",
+        `UID:${fechaIcs(new Date())}-${codigo}@mercadoeficiente.cl`,
+        `DTSTAMP:${fechaIcs(new Date())}`,
+        `DTSTART:${fechaIcs(fechaCierre)}`,
+        `DTEND:${fechaIcs(fechaCierre)}`,
+        `SUMMARY:${textoIcs(titulo)}`,
+        `DESCRIPTION:${textoIcs(`Organismo: ${(oferta.Comprador && oferta.Comprador.NombreOrganismo) || "N/A"}\n${url}`)}`,
+        `URL:${url}`,
+        ...alarmas,
+        "END:VEVENT",
+        "END:VCALENDAR",
+    ].join("\r\n");
 }
 
 
-//Historial de busqueda
-
-
-
-// Correo de Aviso
-emailjs.init("e8UTu4GeibxTJ2A_r"); // Tu Public Key
-
-$(document).ready(function () {
-    // Cuando se presiona el botón "Enviar Aviso"
-    $("#btnAvisarResultado").click(function () {
-        verificarResultados();
-    });
-});
-
-function verificarResultados() {
+// Resultado de adjudicación: se muestra en pantalla (antes se enviaba por
+// EmailJS desde el navegador a cualquier correo, lo que permitía usar la
+// cuenta para enviar spam).
+function verResultado() {
     const tema = document.getElementById("temaInput").value.trim();
-    const email = document.getElementById("correoAviso").value.trim();
+    const salida = document.getElementById("resultadoAdjudicacion");
+    const boton = document.getElementById("btnVerResultado");
 
     if (!tema) {
         alert("Ingresa un código de temática.");
         return;
     }
-    if (!email) {
-        alert("Ingresa un correo para el aviso.");
-        return;
-    }
+
+    boton.disabled = true;
+    salida.textContent = "Consultando…";
 
     fetch(`/api/licitaciones?codigo=${encodeURIComponent(tema)}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error("Network response was not ok: " + response.statusText);
+                throw new Error("Respuesta no válida: " + response.status);
             }
             return response.json();
         })
         .then(data => {
             const proyecto = data && data.Listado && data.Listado[0];
-            const item = proyecto && proyecto.Items && proyecto.Items.Listado && proyecto.Items.Listado[0];
+            const items = (proyecto && proyecto.Items && proyecto.Items.Listado) || [];
+            const adjudicados = items.filter(i => i.Adjudicacion && i.Adjudicacion.NombreProveedor);
 
-            if (item && item.Adjudicacion && item.Adjudicacion.NombreProveedor) {
-                const cantidad = item.Adjudicacion.Cantidad;
-                const montoUnitario = item.Adjudicacion.MontoUnitario;
-                const total = cantidad * montoUnitario;
-
-                const urlActa = (proyecto.Adjudicacion && proyecto.Adjudicacion.UrlActa) || 'No disponible';
-                const mensaje = `Se ha adjudicado el Proyecto "${proyecto.Nombre}" al Proveedor "${item.Adjudicacion.NombreProveedor}", Rut "${item.Adjudicacion.RutProveedor}" con una cantidad de "${cantidad}" por un monto unitario de $"${montoUnitario}", siendo el total el resultado de esto: ${cantidad} * ${montoUnitario} = $${total}. Para más detalles, ver "${urlActa}"`;
-
-                enviarCorreo(email, mensaje);
-            } else {
-                alert("Aún no hay información de adjudicación para esta licitación.");
+            if (adjudicados.length === 0) {
+                salida.textContent = "Aún no hay información de adjudicación para esta licitación.";
+                return;
             }
+
+            const lineas = adjudicados.map(i => {
+                const total = (Number(i.Adjudicacion.Cantidad) || 0) * (Number(i.Adjudicacion.MontoUnitario) || 0);
+                return `${i.Adjudicacion.NombreProveedor} (RUT ${i.Adjudicacion.RutProveedor}): ` +
+                    `${i.Adjudicacion.Cantidad} × ${formatearPesos(Number(i.Adjudicacion.MontoUnitario) || 0)} = ${formatearPesos(total)}`;
+            });
+            const urlActa = proyecto.Adjudicacion && proyecto.Adjudicacion.UrlActa;
+            salida.textContent = `Adjudicada: ${lineas.join(" · ")}` + (urlActa ? ` · Acta: ${urlActa}` : "");
         })
         .catch(error => {
             console.error("Error al verificar los resultados:", error);
-            alert("Hubo un problema al verificar los resultados.");
+            salida.textContent = "Hubo un problema al consultar el resultado. Intenta nuevamente.";
+        })
+        .finally(() => {
+            boton.disabled = false;
         });
-}
-
-function enviarCorreo(email, mensaje) {
-    const templateParams = {
-        to_email: email,
-        subject: "Notificación de Adjudicación de Proyecto",
-        message: mensaje,
-        reply_to: email
-    };
-
-    emailjs.send("service_5gyggkr", "template_i2hcmdj", templateParams)
-        .then(function() {
-            mostrarMensajeSuscripcion();
-        }, function(error) {
-            console.error('Error al enviar correo', error);
-            alert("Error al enviar el correo.");
-        });
-}
-
-function mostrarMensajeSuscripcion() {
-    $("#mensajeSuscripcion").text("Correo enviado ✓").fadeIn().delay(3000).fadeOut();
 }
 
 
@@ -454,7 +435,7 @@ document.getElementById('temaInput').addEventListener('input', function () {
     if (inputValor) {
         botonVer.disabled = false;
         botonVer.onclick = function () {
-            window.open(`http://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=${inputValor}`, '_blank');
+            window.open(`https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=${encodeURIComponent(inputValor)}`, '_blank', 'noopener');
         };
     } else {
         botonVer.disabled = true;
